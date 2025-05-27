@@ -1,0 +1,112 @@
+import json
+import scrapy
+from experiment.items import JinshishujuItem
+from datetime import datetime, timedelta
+
+class JinshishujuSpider(scrapy.Spider):
+    name = "jinshishuju"
+    # 单独设置该爬虫的配置
+    custom_settings = {
+        'USER_AGENT': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
+        'ROBOTSTXT_OBEY': False,
+        'ITEM_PIPELINES': {
+            'experiment.pipelines.MySQLPipeline': 300,
+        }
+    }
+    # allowed_domains = ["rili.jin10.com"]
+    url = 'https://e0430d16720e4211b5e072c26205c890.z3c.jin10.com/get/data?date='
+    headers = {
+        "accept": "application/json, text/plain, */*",
+        "origin": "https://rili.jin10.com",
+        "referer": "https://rili.jin10.com/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+        "x-app-id": "sKKYe29sFuJaeOCJ",
+        "x-version": "2.0"
+    }
+    def start_requests(self):
+        # 定义起止日期
+        start_date = datetime.strptime("2025-05-16", "%Y-%m-%d")
+        end_date = datetime.strptime("2025-05-16", "%Y-%m-%d")
+        current_date = start_date
+        data_list = []
+        # 循环生成从起始日期到结束日期之间每天的URL请求
+        while current_date <= end_date:
+            data_list.append(current_date.strftime('%Y-%m-%d'))
+            # 通过yield发送请求，meta中传递当前日期，方便parse中使用
+            current_date += timedelta(days=1)  # 日期+1天
+
+        for i in data_list:
+            url = self.url + f'{i}&category=cj'
+            print(url)
+            yield scrapy.Request(url=url,headers= self.headers,callback=self.parse)
+
+    def parse(self, response, **kwargs):
+        data = json.loads(response.text)
+        data_dict = data.get('data', [])
+        if data_dict is None:
+            print("接口没有返回数据")
+            return
+        for i in data_dict:
+            # 时间
+            js_time = i.get('actual_time')
+            if js_time is None:
+                js_time = '时间数据为空'
+
+            # 数据
+            country = i.get('country') or ''
+            time_period = i.get('time_period') or ''
+            indicator_name = i.get('indicator_name') or ''
+            js_data = country + time_period + indicator_name
+            if not js_data:
+                js_data = '数据为空'
+
+            # 重要性
+            js_star = i.get('star', None)
+            if js_star is not None:
+                if js_star == 1:
+                    js_star = '很低'
+                if js_star == 2:
+                    js_star = '低'
+                if js_star == 3:
+                    js_star = '中'
+                if js_star == 4:
+                    js_star = '高'
+                if js_star == 5:
+                    js_star = '很高'
+            else:
+                js_star = '重要性为空'
+            # 前值
+            js_previous = i.get('previous', None)
+            if js_previous is not None:
+                js_previous += '%'
+            else:
+                js_previous = '前值为空'
+
+            # 预测值
+            consensus = i.get('consensus')
+            if consensus is not None:
+                consensus += '%'
+            else:
+                consensus = '预测值为空'
+
+            # 公布值
+            js_actual = i.get('actual', None)
+            if js_actual is not None:
+                js_actual += '%'
+            else:
+                js_actual = '公布值为空'
+            item = JinshishujuItem()
+            item['time'] = js_time
+            item['data'] = js_data
+            item['importance'] = js_star
+            item['previous'] = js_previous
+            item['actual'] = js_actual
+            item['consensus'] = consensus
+            # print('时间', js_time)
+            # print('数据', js_data)
+            # print('重要性', js_star)
+            # print('前值', js_previous)
+            # print('预测值', consensus)
+            # print('公布值', js_actual)
+            # print('--------------------------------')
+            yield item
