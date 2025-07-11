@@ -1,0 +1,217 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ast综合</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p>小时候，当我们拿到一个螺丝刀和一台机器，人生中最令人怀念的梦幻时刻便开始了：</p>
+<p>我们把机器，拆成一个一个小零件，一个个齿轮与螺钉，用巧妙的机械原理衔接在一起…</p>
+<p>当我们把它重新照不同的方式组装起来，这时，机器重新又跑动了起来——世界在你眼中如获新生<br>
+通过抽象语法树解析，我们可以像童年时拆解玩具一样，透视Javascript这台机器的运转，并且重新按着你的意愿来组装。<br>
+现在，我们拆解一个简单的add函数</p>
+<pre><code class="prism language-python">function add<span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> a <span class="token operator">+</span> b
+<span class="token punctuation">}</span>
+</code></pre>
+<p>首先，我们拿到的这个语法块，是一个FunctionDeclaration(函数定义)对象。</p>
+<p>用力拆开，它成了三块：</p>
+<p>一个id，就是它的名字，即add<br>
+两个params，就是它的参数，即[a, b]<br>
+一块body，也就是大括号内的一堆东西</p>
+<p>add没办法继续拆下去了，它是一个最基础Identifier（标志）对象，用来作为函数的唯一标志，就像人的姓名一样。</p>
+<pre><code class="prism language-python"><span class="token punctuation">{</span>
+    name<span class="token punctuation">:</span> <span class="token string">'add'</span>
+    <span class="token builtin">type</span><span class="token punctuation">:</span> <span class="token string">'identifier'</span>
+    <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>params继续拆下去，其实是两个Identifier组成的数组。之后也没办法拆下去了。</p>
+<p>[<br>
+{<br>
+name: ‘a’<br>
+type: ‘identifier’<br>
+…<br>
+},<br>
+{<br>
+name: ‘b’<br>
+type: ‘identifier’<br>
+…<br>
+}<br>
+]<br>
+接下来，我们继续拆开body<br>
+我们发现，body其实是一个BlockStatement（块状域）对象，用来表示是{return a + b}</p>
+<p>打开Blockstatement，里面藏着一个ReturnStatement（Return域）对象，用来表示return a + b</p>
+<p>继续打开ReturnStatement,里面是一个BinaryExpression(二项式)对象，用来表示a + b</p>
+<p>继续打开BinaryExpression，它成了三部分，left，operator，right<br>
+operator 即+<br>
+left 里面装的，是Identifier对象 a<br>
+right 里面装的，是Identifer对象 b<br>
+就这样，我们把一个简单的add函数拆解完毕，用图表示就是<br>
+<img src="https://img-blog.csdnimg.cn/3bd01d65127c4b22ad804fde37322181.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+看！抽象语法树(Abstract Syntax Tree)，的确是一种标准的树结构。</p>
+<p>那么，上面我们提到的Identifier、Blockstatement、ReturnStatement、BinaryExpression， 这一个个小部件的说明书去哪查？请查看 AST对象文档</p>
+<h1><a id="ASTJS_61"></a>AST还原极验混淆JS实战</h1>
+<pre><code class="prism language-python">https<span class="token punctuation">:</span><span class="token operator">//</span>static<span class="token punctuation">.</span>geetest<span class="token punctuation">.</span>com<span class="token operator">/</span>static<span class="token operator">/</span>js<span class="token operator">/</span>fullpage<span class="token punctuation">.</span><span class="token number">8.9</span><span class="token number">.5</span><span class="token punctuation">.</span>js
+</code></pre>
+<p>下载该代码到本地<br>
+<img src="https://img-blog.csdnimg.cn/209313eec04a47cd865e4f42a31cbfef.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_15,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+简单看看代码发现啥也看不懂<br>
+别慌，静下心来，一点一点分析，一点一点解决！</p>
+<p>观察代码发现里有很多地方调用了AJgjJ.DAi，搜索出515个匹配结果，如下图<br>
+<img src="https://img-blog.csdnimg.cn/a33a6611e1c14d3da87dd7a867f0f720.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_18,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+在匹配结果中有两类调用，如上图红框标示的</p>
+<p>第一个：带括号的AJgjJ.DAi(79); 暂时不知道是在干啥；</p>
+<p>第二个，不带括号的AJgjJ.DAi，可以理解为</p>
+<pre><code class="prism language-python">mZtVWz <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'qhicV'</span><span class="token punctuation">]</span><span class="token punctuation">.</span>concat<span class="token punctuation">(</span>AJgjJ<span class="token punctuation">.</span>DAi<span class="token punctuation">)</span>
+</code></pre>
+<p>concat()是合并数组的作用<br>
+<img src="https://img-blog.csdnimg.cn/7313b17c1697485c96b49a3907b60cf9.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+<img src="https://img-blog.csdnimg.cn/b7a61e4353bb485b9a2f631b9f7f07e0.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_15,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+控制台打印看看<br>
+<img src="https://img-blog.csdnimg.cn/77b88dfbd8f649b58cc796dd72ae4494.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_18,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+果然类似数组，通过索引就能取出值来，返回值都是字符串类型。</p>
+<p>那么问题来了：如何将代码里的AJgjJ.DAi()还原成对应的字符串？</p>
+<p>很快就能想到，在JS代码里将字符串"AJgjJ.DAi()“逐个匹配出来，拿到括号里的索引数字，然后将数字值传入函数AJgjJ.DAi()计算得到字符串结果，然后将结果替换代码里的字符串"AJgjJ.DAi()”，就实现了还原的目的了。</p>
+<p>其实AST操作的话也差不多是这个思路，我们把代码复制到在线AST解析网站，看看在AST里是什么样子的</p>
+<pre><code class="prism language-python">https<span class="token punctuation">:</span><span class="token operator">//</span>astexplorer<span class="token punctuation">.</span>net<span class="token operator">/</span>
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/efc7c79af018469dada33630c49d0a87.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_14,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+<img src="https://img-blog.csdnimg.cn/d284e63321d24feda8522c198e7fc900.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_19,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+能看到所有的AJgjJ.DAi都在CallExpression节点里，所以我们首先遍历CallExpression节点，然后定位到name属性得到值并判断是否为DAi，是的话就定位到value属性取出值，再将拿到的value传入到函数AJgjJ.DAi()进行计算，得到结果再使用AST操作替换。</p>
+<p>刚才说到要将value传入到AJgjJ.DAi()里执行，所以首先需要将AJgjJ.DAi的代码从JS里扣过来放到Node里用于计算。<br>
+<img src="https://img-blog.csdnimg.cn/f526562481c0471fbaa20365db3f3c36.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_15,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+替换后的结果<br>
+<img src="https://img-blog.csdnimg.cn/b3cadc6273f34786b936d5deb34e9217.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_18,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+可以看到带括号的AJgjJ.DAi()原来有8个，处理后已经都被还原掉了</p>
+<p>不带括号的AJgjJ.DAi还有519个<br>
+<img src="https://img-blog.csdnimg.cn/d72775be046040aaa2e343656768d8be.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_15,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+接下来我们来处理这些不带括号的AJgjJ.DAi</p>
+<p>在处理之前，先分析一下<br>
+<img src="https://img-blog.csdnimg.cn/015afff1888544e4b086714083581321.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_18,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+观察上图:<br>
+nxWF = AJgjJ.DAi<br>
+concat是合并数组，所以<br>
+mZtVWz = [‘qhicV’].concat(nxWF)<br>
+其实等于<br>
+mZtVWz = [‘qhicV’,AJgjJ.DAi]<br>
+而<br>
+oeXg = mZtVWz[1];<br>
+就等于<br>
+oeXg = AJgjJ.DAi;<br>
+图中所有红框的nxWF和绿框的oeXg，实际上都等于AJgjJ.DAi</p>
+<p>这里我们的处理思路是：将所有的这两个位置的name全部遍历出来，放入一个数组，然后遍历判断所有类似oeXg(12)的name是否在数组里，是的话就替换<br>
+<img src="https://img-blog.csdnimg.cn/d1d2ec4841e24f09b13a9c4ab8e3d939.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_19,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+<img src="https://img-blog.csdnimg.cn/a3494afa6b6a4f4cbf5c8d4e93980881.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_18,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+代码实现：<br>
+<img src="https://img-blog.csdnimg.cn/0cc2b26f079347dcab0437233d79243f.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_18,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+<img src="https://img-blog.csdnimg.cn/14e1326921424b6c9d3cb0c1d6da40e1.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_18,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+看下效果<br>
+<img src="https://img-blog.csdnimg.cn/bdbab624e2df467e8f45fc18ece013ff.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_18,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+能看到在数组nameArray里存在的函数已经被还原了，但是发现还存在一些冗余代码，我们看看如何将它们删除</p>
+<p>继续分析AST结构<br>
+<img src="https://img-blog.csdnimg.cn/21c5ac10f5f447fdb585bae7e97d176b.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_18,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+能看到左边这三组对应的是右边的三个节点，我们只需要定位到右边的这三个节点，然后删除就行<br>
+<img src="https://img-blog.csdnimg.cn/05e0b90f18d547739a5ad3a79208c22e.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_11,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+首先定位第一个节点，定位的方法就是判断VariableDeclaraction下面property下面的name是否为DAi<br>
+<img src="https://img-blog.csdnimg.cn/796f20e6805c41c2b72c64289e1b185a.png" alt="在这里插入图片描述"><br>
+代码实现<br>
+<img src="https://img-blog.csdnimg.cn/71d8b415a2374d5d9a7b6e10b461fa8a.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_11,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+还原效果<br>
+<img src="https://img-blog.csdnimg.cn/5759a4c704a74780bb85c701785cafdd.png" alt="在这里插入图片描述"><br>
+看起来清晰点了</p>
+<p>继续分析，观察到代码里有很多unicode代码</p>
+<p><img src="https://img-blog.csdnimg.cn/2d59f75a27d14d068412e43cd0696b43.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_17,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+在AST结构里，能看到unicode代码是在axtra里的，所以我们只需要将axtra给删掉，就能还原掉unicode了<br>
+<img src="https://img-blog.csdnimg.cn/21808732e2db411a92e0d255040f6fb2.png" alt="在这里插入图片描述"><br>
+代码实现：<br>
+<img src="https://img-blog.csdnimg.cn/f640738a65754bae8328b45dd5c6725b.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_15,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+效果：<br>
+<img src="https://img-blog.csdnimg.cn/f85e3f17d0104e8492951ccd580f568e.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_15,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+处理完你会发现仍然有大量的unicode编码的字符串<br>
+<img src="https://img-blog.csdnimg.cn/9abeb0184b8c489cb6fb89d9272a3989.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_15,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+这些是中文的unicode，解决办法是在generator的第二个参数添加</p>
+<p>opts = {jsescOption:{“minimal”:true}}<br>
+<img src="https://img-blog.csdnimg.cn/8e68bc90aa8f4dd1be901034c74e4821.png" alt="在这里插入图片描述"><br>
+添加之后，重新还原一下<br>
+<img src="https://img-blog.csdnimg.cn/27afe1be787a456aba79f3ee077be76d.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_15,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+能看到中文unicode编码也很轻松就被还原了</p>
+<p>剩下的37个匹配结果，都是正则里的，不影响，就不需要做处理了</p>
+<p><img src="https://img-blog.csdnimg.cn/0481f96582224bb1b8138206a33c9100.png" alt="在这里插入图片描述"><br>
+另外在代码里还发现一些eval的代码<br>
+<img src="https://img-blog.csdnimg.cn/7fcc0dfb204f45d28fbf141d721fe562.png" alt="在这里插入图片描述"><br>
+还原后，eval里面是字符串形式的JS代码<br>
+<img src="https://img-blog.csdnimg.cn/9887513ee20c4e35919c1af783ac2d1f.png" alt="在这里插入图片描述"><br>
+所以在反混淆之前大家可以先去浏览器执行一下eval里的这些函数，拿到值后格式化一下替换掉这些eval，这样可以在还原时一起将那些字符串形式的JS代码也一并还原掉，这里就不多说了。</p>
+<p>继续分析，细心的你一定能看到极验的JS代码中有很多这种结构的代码，非常影响代码的阅读</p>
+<p><img src="https://img-blog.csdnimg.cn/c0d34dd84d68401686a6c2b6ba94a38e.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_15,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+这种结构的代码俗称控制流平坦化，简单来讲就是将代码块之间的关系打断，由一个分发器来控制代码块的跳转，找了个图如下<br>
+<img src="https://img-blog.csdnimg.cn/3e8fff15e3a84c3686193026a4dc5849.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_14,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+<img src="https://img-blog.csdnimg.cn/f51bae5764fb454d815ae4bf92e2e0b7.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_15,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+先引用一个简单的例子，这样清晰点<br>
+<img src="https://img-blog.csdnimg.cn/271a82ca115646edbd7eeba8d5266f15.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+switch就是流程控制器，它会遍历arr数组，因为每一句case里面都有continue，也就是说switch每次从arr中取出值，就会把所有的case语句都执行一遍，这样去扰乱程序的执行流程，以增加我们分析代码的难度，等case都执行完后再从arr数组中取下一个值。直到遍历完arr，才退出循环。</p>
+<p>所以arr数组就是程序的主要执行顺序，我们只需遍历它，然后执行对应case语句块的代码，就能达到简化流程的目的了。<br>
+<img src="https://img-blog.csdnimg.cn/005f0b63b94b4f4b990509f92d9050a8.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+看看代码实现对应的JS和AST结构</p>
+<pre><code class="prism language-python"><span class="token operator">//</span> 获取上一个节点，也就是VariableDeclaration 
+var PrevSibling <span class="token operator">=</span> path<span class="token punctuation">.</span>getPrevSibling<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>复制代码
+
+</code></pre>
+<p>当前的节点是ForStatement，它的上一个节点就是VariableDeclaration，也就是for语句上面的一个语句，它是控制的初始判断值；<br>
+<img src="https://img-blog.csdnimg.cn/8f630b270e8643e787c07e80b4fd842c.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"></p>
+<pre><code class="prism language-python"><span class="token operator">//</span> 获取控制流的初始值
+var argNode <span class="token operator">=</span> PrevSibling<span class="token punctuation">.</span>container<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>declarations<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>init<span class="token punctuation">;</span>
+var init_arg_f <span class="token operator">=</span> argNode<span class="token punctuation">.</span><span class="token builtin">object</span><span class="token punctuation">.</span><span class="token builtin">property</span><span class="token punctuation">.</span>value<span class="token punctuation">;</span>
+var init_arg_s <span class="token operator">=</span> argNode<span class="token punctuation">.</span><span class="token builtin">property</span><span class="token punctuation">.</span>value<span class="token punctuation">;</span>
+var init_arg <span class="token operator">=</span> AJgjJ<span class="token punctuation">.</span>EMf<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">[</span>init_arg_f<span class="token punctuation">]</span><span class="token punctuation">[</span>init_arg_s<span class="token punctuation">]</span><span class="token punctuation">;</span>复制代码
+
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/2c8e162184404796b46db83e382f2836.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"></p>
+<pre><code class="prism language-python"><span class="token operator">//</span> 提取<span class="token keyword">for</span>节点中的<span class="token keyword">if</span>判断参数的value作为判断参数
+var break_arg_f <span class="token operator">=</span> node<span class="token punctuation">.</span>test<span class="token punctuation">.</span>right<span class="token punctuation">.</span><span class="token builtin">object</span><span class="token punctuation">.</span><span class="token builtin">property</span><span class="token punctuation">.</span>value<span class="token punctuation">;</span>
+var break_arg_s <span class="token operator">=</span> node<span class="token punctuation">.</span>test<span class="token punctuation">.</span>right<span class="token punctuation">.</span><span class="token builtin">property</span><span class="token punctuation">.</span>value<span class="token punctuation">;</span>
+var break_arg <span class="token operator">=</span> AJgjJ<span class="token punctuation">.</span>EMf<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">[</span>break_arg_f<span class="token punctuation">]</span><span class="token punctuation">[</span>break_arg_s<span class="token punctuation">]</span><span class="token punctuation">;</span>复制代码
+
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/b60da2c857884e8d89b66ac5aeedb183.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"></p>
+<pre><code class="prism language-python"><span class="token operator">//</span> 提取并计算<span class="token keyword">case</span>后的条件判断的值
+var case_arg_f <span class="token operator">=</span> case_list<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>test<span class="token punctuation">.</span><span class="token builtin">object</span><span class="token punctuation">.</span><span class="token builtin">property</span><span class="token punctuation">.</span>value<span class="token punctuation">;</span>
+var case_arg_s <span class="token operator">=</span> case_list<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>test<span class="token punctuation">.</span><span class="token builtin">property</span><span class="token punctuation">.</span>value<span class="token punctuation">;</span>
+var case_init <span class="token operator">=</span> AJgjJ<span class="token punctuation">.</span>EMf<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">[</span>case_arg_f<span class="token punctuation">]</span><span class="token punctuation">[</span>case_arg_s<span class="token punctuation">]</span><span class="token punctuation">;</span>复制代码
+
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/0f497e1dbcf640178ba69b71fc2ebd24.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"></p>
+<pre><code class="prism language-python"><span class="token operator">//</span>当前<span class="token keyword">case</span>下的所有节点
+var targetBody <span class="token operator">=</span> case_list<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>consequent<span class="token punctuation">;</span>复制代码
+
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/e940d098d8dc4d4ba44439c5cf7a2e3b.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"></p>
+<pre><code class="prism language-python"><span class="token operator">//</span> 提取<span class="token keyword">break</span>节点的上一个节点AJgjJ<span class="token punctuation">.</span>EMf<span class="token punctuation">(</span><span class="token punctuation">)</span>后面的两个索引值
+var change_arg_f <span class="token operator">=</span> targetBody<span class="token punctuation">[</span>targetBody<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">.</span>expression<span class="token punctuation">.</span>right<span class="token punctuation">.</span><span class="token builtin">object</span><span class="token punctuation">.</span><span class="token builtin">property</span><span class="token punctuation">.</span>value<span class="token punctuation">;</span>
+var change_arg_s <span class="token operator">=</span> targetBody<span class="token punctuation">[</span>targetBody<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">.</span>expression<span class="token punctuation">.</span>right<span class="token punctuation">.</span><span class="token builtin">property</span><span class="token punctuation">.</span>value<span class="token punctuation">;</span>
+
+<span class="token operator">//</span> 修改控制流的初始值init_arg <span class="token operator">=</span> AJgjJ<span class="token punctuation">.</span>EMf<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">[</span>change_arg_f<span class="token punctuation">]</span><span class="token punctuation">[</span>change_arg_s<span class="token punctuation">]</span><span class="token punctuation">;</span>复制代码
+
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/a711e88c0d314a809e2bbea865527dde.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"></p>
+<pre><code class="prism language-python">targetBody<span class="token punctuation">.</span>pop<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">//</span> 删除
+breaktargetBody<span class="token punctuation">.</span>pop<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">//</span> 删除<span class="token keyword">break</span>节点的上一个节点复制代码
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/5ee25f1f574d4975858116501e756bcd.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"></p>
+<pre><code class="prism language-python">resultBody <span class="token operator">=</span> resultBody<span class="token punctuation">.</span>concat<span class="token punctuation">(</span>targetBody<span class="token punctuation">)</span><span class="token punctuation">;</span>复制代码
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/6baacce20d3c4e04808042ff7f90d85b.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+对照着上面的代码和AST结构自行研究哈，注释也比较详细了</p>
+<p>经过以上的处理之后，就能得到一个相对容易阅读的JS代码了，这样分析逆向的时候也会更容易一点</p>
+<p>还原后的效果<br>
+<img src="https://img-blog.csdnimg.cn/4472f66702c143e9bb258a8c7945916f.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAd29zaGl3YW5nc2hhbmc=,size_20,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"><br>
+今天的AST还原极验混淆代码实战到这里就全部完成了</p>
+</div>
+</body>
+
+</html>
